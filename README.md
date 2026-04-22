@@ -10,7 +10,6 @@ Users can create tasks, assign difficulty levels, complete them, earn experience
 ## Team Members
 - Bakyt Aiganym (24B031680)
 - Yessenbek Ainur (24B031758)
-- Eradilov Daniel (24B032125)
 
 ---
 
