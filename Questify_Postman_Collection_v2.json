@@ -1,0 +1,472 @@
+{
+  "info": {
+    "name": "Questify API",
+    "description": "Full API collection for the Questify gamified task management project (KBTU Web Dev). Base URL: http://127.0.0.1:8000/api",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/register/", "host": ["{{base_url}}"], "path": ["auth", "register", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"testuser@example.com\",\n  \"password\": \"pass1234\"\n}"
+            },
+            "description": "Register a new user. Returns access and refresh JWT tokens."
+          },
+          "response": [
+            {
+              "name": "201 Created – Registration successful",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Registration successful.\",\n  \"user\": {\n    \"id\": 1,\n    \"username\": \"testuser\",\n    \"email\": \"testuser@example.com\"\n  },\n  \"access\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('access_token', json.access);",
+                  "pm.collectionVariables.set('refresh_token', json.refresh);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/login/", "host": ["{{base_url}}"], "path": ["auth", "login", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"pass1234\"\n}"
+            },
+            "description": "Login with username and password. Automatically saves access_token and refresh_token to collection variables."
+          },
+          "response": [
+            {
+              "name": "200 OK – Login successful",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Login successful.\",\n  \"user\": {\n    \"id\": 1,\n    \"username\": \"testuser\",\n    \"email\": \"testuser@example.com\"\n  },\n  \"access\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/logout/", "host": ["{{base_url}}"], "path": ["auth", "logout", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "description": "Blacklists the refresh token, effectively logging the user out."
+          },
+          "response": [
+            {
+              "name": "200 OK – Logout successful",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Logout successful.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/profile/", "host": ["{{base_url}}"], "path": ["auth", "profile", ""] },
+            "description": "Returns the authenticated user's stats: XP, level, badges, weekly progress."
+          },
+          "response": [
+            {
+              "name": "200 OK – Profile with stats",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 1,\n  \"username\": \"testuser\",\n  \"email\": \"testuser@example.com\",\n  \"total_quests\": 5,\n  \"completed_quests\": 3,\n  \"xp\": 175,\n  \"level\": 2,\n  \"badges\": [\"First Blood\", \"Quest Hunter\"],\n  \"weekly\": {\n    \"week_start\": \"2026-04-21\",\n    \"week_end\": \"2026-04-27\",\n    \"items\": [\n      { \"id\": 1, \"title\": \"Complete 3 quests this week\", \"progress\": 3, \"goal\": 3, \"xp_reward\": 120, \"completed\": true },\n      { \"id\": 2, \"title\": \"Create 2 new quests\", \"progress\": 2, \"goal\": 2, \"xp_reward\": 60, \"completed\": true },\n      { \"id\": 3, \"title\": \"Beat 1 hard quest\", \"progress\": 0, \"goal\": 1, \"xp_reward\": 100, \"completed\": false }\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/users/", "host": ["{{base_url}}"], "path": ["auth", "users", ""] },
+            "description": "Returns a list of all users with their stats (used on the Social page)."
+          },
+          "response": [
+            {
+              "name": "200 OK – User list",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  {\n    \"id\": 1,\n    \"username\": \"testuser\",\n    \"email\": \"testuser@example.com\",\n    \"total_quests\": 5,\n    \"completed_quests\": 3,\n    \"xp\": 175,\n    \"level\": 2,\n    \"badges\": [\"First Blood\", \"Quest Hunter\"]\n  },\n  {\n    \"id\": 2,\n    \"username\": \"anotheruser\",\n    \"email\": \"another@example.com\",\n    \"total_quests\": 10,\n    \"completed_quests\": 7,\n    \"xp\": 550,\n    \"level\": 6,\n    \"badges\": [\"First Blood\", \"Quest Hunter\", \"XP Grinder\", \"Legend\"]\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Get User Profile by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/users/1/", "host": ["{{base_url}}"], "path": ["auth", "users", "1", ""] },
+            "description": "Returns a specific user's profile and weekly progress by their user ID."
+          },
+          "response": [
+            {
+              "name": "200 OK – User profile",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 1,\n  \"username\": \"testuser\",\n  \"email\": \"testuser@example.com\",\n  \"total_quests\": 5,\n  \"completed_quests\": 3,\n  \"xp\": 175,\n  \"level\": 2,\n  \"badges\": [\"First Blood\", \"Quest Hunter\"],\n  \"weekly\": { \"week_start\": \"2026-04-21\", \"week_end\": \"2026-04-27\", \"items\": [] }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Leaderboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/leaderboard/", "host": ["{{base_url}}"], "path": ["auth", "leaderboard", ""] },
+            "description": "Returns all users sorted by XP (descending) with rank numbers."
+          },
+          "response": [
+            {
+              "name": "200 OK – Leaderboard",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  { \"rank\": 1, \"id\": 2, \"username\": \"anotheruser\", \"xp\": 550, \"level\": 6, \"completed_quests\": 7 },\n  { \"rank\": 2, \"id\": 1, \"username\": \"testuser\", \"xp\": 175, \"level\": 2, \"completed_quests\": 3 }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Get Weekly Quests",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/auth/weekly/", "host": ["{{base_url}}"], "path": ["auth", "weekly", ""] },
+            "description": "Returns this week's challenge progress for the authenticated user."
+          },
+          "response": [
+            {
+              "name": "200 OK – Weekly challenges",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"week_start\": \"2026-04-21\",\n  \"week_end\": \"2026-04-27\",\n  \"items\": [\n    { \"id\": 1, \"title\": \"Complete 3 quests this week\", \"description\": \"Finish any three quests before weekly reset.\", \"progress\": 1, \"goal\": 3, \"xp_reward\": 120, \"completed\": false },\n    { \"id\": 2, \"title\": \"Create 2 new quests\", \"description\": \"Add two new quests to your board.\", \"progress\": 2, \"goal\": 2, \"xp_reward\": 60, \"completed\": true },\n    { \"id\": 3, \"title\": \"Beat 1 hard quest\", \"description\": \"Complete one hard quest this week.\", \"progress\": 0, \"goal\": 1, \"xp_reward\": 100, \"completed\": false }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/categories/", "host": ["{{base_url}}"], "path": ["categories", ""] },
+            "description": "Returns all categories belonging to the authenticated user."
+          },
+          "response": [
+            {
+              "name": "200 OK – Category list",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  { \"id\": 1, \"name\": \"Work\", \"color\": \"purple\", \"owner\": 1 },\n  { \"id\": 2, \"name\": \"Personal\", \"color\": \"blue\", \"owner\": 1 }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/categories/", "host": ["{{base_url}}"], "path": ["categories", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Fitness\",\n  \"color\": \"green\"\n}"
+            },
+            "description": "Creates a new category linked to the authenticated user."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{ \"id\": 3, \"name\": \"Fitness\", \"color\": \"green\", \"owner\": 1 }"
+            }
+          ]
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/categories/1/", "host": ["{{base_url}}"], "path": ["categories", "1", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Work Tasks\",\n  \"color\": \"orange\"\n}"
+            },
+            "description": "Updates an existing category. Partial updates supported."
+          },
+          "response": [
+            {
+              "name": "200 OK – Updated",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{ \"id\": 1, \"name\": \"Work Tasks\", \"color\": \"orange\", \"owner\": 1 }"
+            }
+          ]
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/categories/1/", "host": ["{{base_url}}"], "path": ["categories", "1", ""] },
+            "description": "Deletes a category. Quests in that category will have category set to null."
+          },
+          "response": [
+            {
+              "name": "204 No Content – Deleted",
+              "status": "No Content",
+              "code": 204,
+              "header": [],
+              "body": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Quests",
+      "item": [
+        {
+          "name": "List All Quests",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/quests/", "host": ["{{base_url}}"], "path": ["quests", ""] },
+            "description": "Returns all quests for the authenticated user, sorted by newest first."
+          },
+          "response": [
+            {
+              "name": "200 OK – Quest list",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  {\n    \"id\": 1,\n    \"title\": \"Learn Angular\",\n    \"description\": \"Study Angular for 2 hours\",\n    \"difficulty\": \"medium\",\n    \"deadline\": \"2026-04-30\",\n    \"status\": \"pending\",\n    \"xp_reward\": 50,\n    \"owner\": 1,\n    \"category\": 1,\n    \"category_name\": \"Work\",\n    \"created_at\": \"2026-04-22T14:00:00Z\",\n    \"updated_at\": \"2026-04-22T14:00:00Z\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "List Quests (Filter by Status)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/quests/?status=pending",
+              "host": ["{{base_url}}"],
+              "path": ["quests", ""],
+              "query": [{ "key": "status", "value": "pending" }]
+            },
+            "description": "Filter quests by status. Use ?status=pending or ?status=completed."
+          },
+          "response": [
+            {
+              "name": "200 OK – Filtered quests",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  {\n    \"id\": 1,\n    \"title\": \"Learn Angular\",\n    \"status\": \"pending\",\n    \"difficulty\": \"medium\",\n    \"xp_reward\": 50\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Create Quest",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/quests/", "host": ["{{base_url}}"], "path": ["quests", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Write unit tests\",\n  \"description\": \"Write tests for the auth module\",\n  \"difficulty\": \"hard\",\n  \"deadline\": \"2026-05-01\",\n  \"category\": 1\n}"
+            },
+            "description": "Creates a new quest linked to the authenticated user. xp_reward is auto-calculated based on difficulty."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 2,\n  \"title\": \"Write unit tests\",\n  \"description\": \"Write tests for the auth module\",\n  \"difficulty\": \"hard\",\n  \"deadline\": \"2026-05-01\",\n  \"status\": \"pending\",\n  \"xp_reward\": 100,\n  \"owner\": 1,\n  \"category\": 1,\n  \"category_name\": \"Work\",\n  \"created_at\": \"2026-04-23T10:00:00Z\",\n  \"updated_at\": \"2026-04-23T10:00:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Quest by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/quests/1/", "host": ["{{base_url}}"], "path": ["quests", "1", ""] },
+            "description": "Returns full details of a single quest by ID."
+          },
+          "response": [
+            {
+              "name": "200 OK – Quest detail",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 1,\n  \"title\": \"Learn Angular\",\n  \"description\": \"Study Angular for 2 hours\",\n  \"difficulty\": \"medium\",\n  \"deadline\": \"2026-04-30\",\n  \"status\": \"pending\",\n  \"xp_reward\": 50,\n  \"owner\": 1,\n  \"category\": 1,\n  \"category_name\": \"Work\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Quest",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/quests/1/", "host": ["{{base_url}}"], "path": ["quests", "1", ""] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Learn Angular (updated)\",\n  \"difficulty\": \"hard\"\n}"
+            },
+            "description": "Partially updates a quest. Supports any subset of fields."
+          },
+          "response": [
+            {
+              "name": "200 OK – Updated quest",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 1,\n  \"title\": \"Learn Angular (updated)\",\n  \"difficulty\": \"hard\",\n  \"xp_reward\": 100,\n  \"status\": \"pending\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Quest",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/quests/1/", "host": ["{{base_url}}"], "path": ["quests", "1", ""] },
+            "description": "Permanently deletes a quest by ID."
+          },
+          "response": [
+            {
+              "name": "204 No Content – Deleted",
+              "status": "No Content",
+              "code": 204,
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Complete Quest",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": { "raw": "{{base_url}}/quests/1/complete/", "host": ["{{base_url}}"], "path": ["quests", "1", "complete", ""] },
+            "description": "Marks a quest as completed, awarding XP to the user. Also creates a QuestLog entry."
+          },
+          "response": [
+            {
+              "name": "200 OK – Quest completed",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Quest completed successfully.\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
